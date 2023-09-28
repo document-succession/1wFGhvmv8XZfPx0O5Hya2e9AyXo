@@ -1,0 +1,334 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN" "JATS-archivearticle1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+  <front>
+    <journal-meta>
+      <journal-id/>
+      <journal-title-group>
+</journal-title-group>
+      <issn/>
+      <publisher>
+        <publisher-name/>
+      </publisher>
+    </journal-meta>
+    <article-meta>
+      <title-group>
+        <article-title>Digital Succession Identifiers</article-title>
+      </title-group>
+      <contrib-group>
+        <contrib contrib-type="author">
+          <contrib-id contrib-id-type="orcid">0000-0002-5014-4809</contrib-id>
+          <name>
+            <surname>Ellerman</surname>
+            <given-names>E. Castedo</given-names>
+          </name>
+          <email>castedo@castedo.com</email>
+        </contrib>
+      </contrib-group>
+      <pub-date date-type="eprint" publication-format="electronic" iso-8601-date="2022-08-09">
+        <day>9</day>
+        <month>8</month>
+        <year>2022</year>
+      </pub-date>
+      <permissions>
+        <copyright-statement>© 2022, Ellerman et al</copyright-statement>
+        <copyright-year>2022</copyright-year>
+        <copyright-holder>Ellerman et al</copyright-holder>
+        <license license-type="open-access">
+          <ali:license_ref xmlns:ali="http://www.niso.org/schemas/ali/1.0/">https://creativecommons.org/licenses/by/4.0/</ali:license_ref>
+          <license-p>This document is distributed under a Creative Commons
+Attribution 4.0 International license.</license-p>
+        </license>
+      </permissions>
+      <abstract>
+        <p><bold>STAGE</bold>: Early draft</p>
+        <p><bold>DOCUMENT TYPE</bold>: Technical Specification</p>
+        <p>This is a specification of Digital Succession Identifiers implemented
+over git.</p>
+      </abstract>
+    </article-meta>
+  </front>
+  <body>
+    <sec id="introduction">
+      <title>Introduction</title>
+      <p>This is a technical specification of <italic>Digital Succession
+  Identifiers</italic>. A non-technical background and motivation for
+  this new technology can be found in the
+  <ext-link ext-link-type="uri" xlink:href="https://perm.pub/czdv8PyJKF7LneTnaVT6pgAKyh8/0.1">description
+  of the perm.pub pilot project</ext-link>.</p>
+    </sec>
+    <sec id="digital-successions">
+      <title>Digital successions</title>
+      <p>A digital succession contains digital objects. A digital object in
+  this context is a fixed finite collection of bits. A computer file is
+  an example of a digital object. A file system directory (folder) can
+  also be represented as a digital object by both
+  <ext-link ext-link-type="uri" xlink:href="https://en.wikipedia.org/wiki/Git">git</ext-link><xref alt="1" rid="ref-enwikiU003A1109231861" ref-type="bibr">1</xref>
+  and
+  <ext-link ext-link-type="uri" xlink:href="https://softwareheritage.org">Software
+  Heritage</ext-link>
+  <xref alt="2" rid="ref-cosmo_referencing_2020" ref-type="bibr">2</xref>.
+  Conceptually, each digital object in a digital succession is a new
+  edition of a previous digital object. Each edition is assigned a
+  number which determines its order. Although a digital succession
+  expands, each digital object within the succession does not
+  change.</p>
+      <p>A digital succession is also digitally signed. In the simplest
+  case, a single user signs using a digital key that is verified to be
+  for that user. In this specification, the digital signature is made
+  using a
+  <ext-link ext-link-type="uri" xlink:href="https://en.wikipedia.org/wiki/Pretty_Good_Privacy">PGP
+  key</ext-link>
+  <xref alt="3" rid="ref-enwikiU003A1108847090" ref-type="bibr">3</xref>.</p>
+      <p>When a digital succession is created, it consists of only a
+  digitally signed genesis record and no digital object editions. The
+  <italic>Digital Succession Identifier</italic> is an intrinsic
+  identifier
+  <xref alt="4" rid="ref-di_cosmo_2044_2022" ref-type="bibr">4</xref> of
+  the genesis record.</p>
+      <sec id="digital-successions-implemented-via-git">
+        <title>Digital successions implemented via git</title>
+        <p>In the git implementation, the genesis record is a signed initial
+    git commit with an empty tree (and no parent).</p>
+        <p>To expand the digital succession, additional commits are made
+    using the same signing key. The git tree associated with each
+    additional commit is not a new edition of the digital object. The
+    git tree of a commit is a full succession record. The full
+    succession record is a directory of all editions to date. The top
+    level directory consists of only subdirectories named as
+    non-negative numbers. Within each number named subdirectory is an
+    entry named <monospace>object</monospace>. This entry is a digital
+    object edition in the digital succession. This digital object can be
+    a file (git blob) or a directory (git tree).</p>
+        <p>For example, when a single file is added as edition 1, the full
+    succession record is a directory with one path of
+    <monospace>1/object</monospace> to a git blob which is edition
+    1.</p>
+      </sec>
+      <sec id="textual-representation-of-a-digital-succession-identifier">
+        <title>Textual representation of a Digital Succession
+    Identifier</title>
+        <p>Given a digital succession genesis record, git and open-source
+    software that emulate git, can calculate a 20 byte binary hash which
+    identifies that digital succession. In most uses of git, this 20
+    byte binary hash is represented textually as a 40 digit hexadecimal
+    number. In this specification, the textual identifier of the 20 byte
+    binary hash is a 27 character representation in standard base64url
+    format (RFC
+    4648)<xref alt="5" rid="ref-rfc4648" ref-type="bibr">5</xref>.</p>
+        <p>It is worth noting, that when a new digital succession (git
+    initial commit) is created, a user can choose not to use it and
+    instead immediately create a new one with a different base64url text
+    representation. There is little cost in not using empty digital
+    successions and recreating new genesis records (git initial commits)
+    until an acceptable base64url identifier is found.</p>
+      </sec>
+    </sec>
+    <sec id="design-choice-rationales">
+      <title>Design Choice Rationales</title>
+      <sec id="use-of-the-term-edition">
+        <title>Use of the term edition</title>
+        <p>The term edition is used to refer to a digital object in the
+    digital succession. Part of the motivation is to avoid confusion
+    with the many uses of the term version. For instance, version can be
+    used to refer to versions of a digital object that are not added as
+    editions. One can also talk about versions of the entire succession
+    record.</p>
+        <p>This language is partly due to the initial application of digital
+    successions for scientific articles. Although there are rarely new
+    versions of scientific articles after they are published, it is well
+    established that scientific textbooks are published in multiple
+    <italic>editions</italic>.</p>
+        <p>In the initial application of digital successions, documents are
+    the digital object. A single edition of a document might be
+    presented in different HTML and PDF <italic>versions</italic>, even
+    though they are the same <italic>edition</italic> of a document.</p>
+      </sec>
+      <sec id="separation-of-git-history-from-edition-history">
+        <title>Separation of git history from edition history</title>
+        <p>A significant design choice is to not directly rely on git commit
+    history to determine the succession of editions. Git commit history
+    is conducive to accurately and faithfully recording the actions
+    performed with git. However this often can be inflexible and
+    confusing for establishing a clean linear history. That Software
+    Heritage automatically preserves git commits compounds the risk that
+    git commits do not correspond well, or perhaps even prevent, an
+    intended clean linear history. It seems likely that there will be
+    situations where having merge commits and non-linear git commit
+    history will be convenient.</p>
+        <p>Having edition history separate from git history also provides a
+    potential path for an enhancement akin to retractions of specific
+    editions.</p>
+      </sec>
+      <sec id="use-of-base64url-rather-than-hexadecimal">
+        <title>Use of base64url rather than hexadecimal</title>
+        <p>The textual identifier is in base64url (Base64 with URL and
+    filename safe alphabet) as specified in RFC 4648
+    <xref alt="5" rid="ref-rfc4648" ref-type="bibr">5</xref>. Both this
+    format and hexadecimal have pros and cons.</p>
+        <p>As mentioned in the introduction to the textual representation,
+    there is no obligation to use the Digital Succession Identifier
+    (DSI) generated by a brand new digital succession. If a DSI is
+    unacceptable to the creator of a new digital succession, a new DSI
+    can be easily generated. Helper tools could perform this function
+    for users by default.</p>
+        <p>The main con to base64url is that it can contain characters which
+    are more prone to copy errors when transmitted through human sight.
+    Certain fonts and handwriting can make poor or no distinction
+    between certain character pairs. For example, some popular sans
+    serif fonts make no visual distinction between capital I and
+    lowercase l.</p>
+        <p>The main pro to base64url is that it is 27 characters rather than
+    40. Future upgrades to DSI will likely make those lengths even
+    larger, and the difference greater. Given that DSIs are used in
+    contexts similar to DOIs, it is likely more acceptable to adopters
+    to use 27 characters which is very typical for a long DOI, rather
+    than 40 characters. Displaying an ID of 27 characters rather than 40
+    characters also fits better on web pages rendered on mobile devices.
+    27 characters are less like to be hidden by showing ellipsis,
+    horizontal scroll regions or shrunk into extremely small fonts.</p>
+        <p>This design decision is partly made on the belief that the
+    copy-via-human-sight issue is increasingly mitigated by a few
+    technology trends:</p>
+        <list list-type="order">
+          <list-item>
+            <label>1)</label>
+            <p>computer system are relied upon more and more via more
+        reliable copying mechanisms such as clicking on hyperlinks,
+        copy-and-paste, and QR codes instead of visual copying and
+        handwriting.</p>
+          </list-item>
+          <list-item>
+            <label>2)</label>
+            <p>Websites tend to switch to using appropriate fonts for code
+        like base64url IDs, when output into HTML. The same applies for
+        tools that automatically produce PDFs from computer data.</p>
+          </list-item>
+          <list-item>
+            <label>3)</label>
+            <p>human-to-computer interfaces, such as input fields of
+        Internet connected software, tend to add features like
+        autocomplete and search disambiguation for typos, when
+        sufficient need arises for such a feature.</p>
+          </list-item>
+        </list>
+      </sec>
+    </sec>
+    <sec id="minutiae">
+      <title>Minutiae</title>
+      <list list-type="bullet">
+        <list-item>
+          <p>An edition number must be a positive integer strictly less than
+      65,536 (2 to the 16th power). Edition number zero is reserved for
+      special future use.</p>
+        </list-item>
+      </list>
+    </sec>
+    <sec id="references">
+      <title>References</title>
+    </sec>
+  </body>
+  <back>
+    <ref-list>
+      <ref id="ref-cosmo_referencing_2020">
+        <element-citation publication-type="article-journal">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Cosmo</surname>
+              <given-names>Roberto Di</given-names>
+            </name>
+            <name>
+              <surname>Gruenpeter</surname>
+              <given-names>Morane</given-names>
+            </name>
+            <name>
+              <surname>Zacchiroli</surname>
+              <given-names>Stefano</given-names>
+            </name>
+          </person-group>
+          <article-title>Referencing Source Code Artifacts: A Separate Concern in Software Citation</article-title>
+          <source>Computing in Science &amp; Engineering</source>
+          <year iso-8601-date="2020-03">2020</year>
+          <month>03</month>
+          <date-in-citation content-type="access-date">
+            <year iso-8601-date="2022-09-05">2022</year>
+            <month>09</month>
+            <day>05</day>
+          </date-in-citation>
+          <volume>22</volume>
+          <issue>2</issue>
+          <issn>1521-9615, 1558-366X</issn>
+          <uri>https://ieeexplore.ieee.org/document/8946737/</uri>
+          <pub-id pub-id-type="doi">10.1109/MCSE.2019.2963148</pub-id>
+          <fpage>33</fpage>
+          <lpage>43</lpage>
+        </element-citation>
+      </ref>
+      <ref id="ref-di_cosmo_2044_2022">
+        <element-citation publication-type="article-journal">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Di Cosmo</surname>
+              <given-names>Roberto</given-names>
+            </name>
+            <name>
+              <surname>Gruenpeter</surname>
+              <given-names>Morane</given-names>
+            </name>
+            <name>
+              <surname>Zacchiroli</surname>
+              <given-names>Stefano</given-names>
+            </name>
+          </person-group>
+          <article-title>204.4 Identifiers for Digital Objects: The case of software source code preservation.</article-title>
+          <year iso-8601-date="2022-08">2022</year>
+          <month>08</month>
+          <date-in-citation content-type="access-date">
+            <year iso-8601-date="2022-09-05">2022</year>
+            <month>09</month>
+            <day>05</day>
+          </date-in-citation>
+          <uri>https://osf.io/kde56/</uri>
+          <pub-id pub-id-type="doi">10.17605/OSF.IO/KDE56</pub-id>
+        </element-citation>
+      </ref>
+      <ref id="ref-enwikiU003A1109231861">
+        <element-citation>
+          <person-group person-group-type="author">
+            <string-name>Wikipedia contributors</string-name>
+          </person-group>
+          <article-title>Git — Wikipedia, the free encyclopedia</article-title>
+          <year iso-8601-date="2022">2022</year>
+          <uri>https://en.wikipedia.org/w/index.php?title=Git&amp;oldid=1109231861</uri>
+        </element-citation>
+      </ref>
+      <ref id="ref-enwikiU003A1108847090">
+        <element-citation>
+          <person-group person-group-type="author">
+            <string-name>Wikipedia contributors</string-name>
+          </person-group>
+          <article-title>Pretty good privacy — Wikipedia, the free encyclopedia</article-title>
+          <year iso-8601-date="2022">2022</year>
+          <uri>https://en.wikipedia.org/w/index.php?title=Pretty_Good_Privacy&amp;oldid=1108847090</uri>
+        </element-citation>
+      </ref>
+      <ref id="ref-rfc4648">
+        <element-citation publication-type="report">
+          <person-group person-group-type="author">
+            <name>
+              <surname>Josefsson</surname>
+              <given-names>S.</given-names>
+            </name>
+          </person-group>
+          <article-title>The Base16, Base32, and Base64 data encodings</article-title>
+          <publisher-name>RFC Editor; Internet Requests for Comments; RFC Editor</publisher-name>
+          <year iso-8601-date="2006-10">2006</year>
+          <month>10</month>
+          <issn>2070-1721</issn>
+          <uri>https://www.rfc-editor.org/info/rfc4648.txt</uri>
+          <pub-id pub-id-type="doi">10.17487/RFC4648</pub-id>
+        </element-citation>
+      </ref>
+    </ref-list>
+  </back>
+</article>
