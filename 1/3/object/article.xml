@@ -1,0 +1,411 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN"
+                  "JATS-archivearticle1.dtd">
+<article xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" dtd-version="1.2" article-type="other">
+<front>
+<journal-meta>
+<journal-id></journal-id>
+<journal-title-group>
+</journal-title-group>
+<issn></issn>
+<publisher>
+<publisher-name></publisher-name>
+</publisher>
+</journal-meta>
+<article-meta>
+<title-group>
+<article-title>Digital Succession Identifiers</article-title>
+</title-group>
+<contrib-group>
+<contrib contrib-type="author">
+<contrib-id contrib-id-type="orcid">https://orcid.org/0000-0002-5014-4809</contrib-id>
+<name>
+<surname>Ellerman</surname>
+<given-names>E. Castedo</given-names>
+</name>
+<email>castedo@castedo.com</email>
+</contrib>
+</contrib-group>
+<pub-date date-type="pub" publication-format="electronic" iso-8601-date="2023-10-01">
+<day>1</day>
+<month>10</month>
+<year>2023</year>
+</pub-date>
+<permissions>
+<copyright-statement>© 2023, Ellerman et al</copyright-statement>
+<copyright-year>2023</copyright-year>
+<copyright-holder>Ellerman et al</copyright-holder>
+<license license-type="open-access">
+<ali:license_ref xmlns:ali="http://www.niso.org/schemas/ali/1.0/">https://creativecommons.org/licenses/by/4.0/</ali:license_ref>
+<license-p>This document is distributed under a Creative Commons Attribution 4.0 International license.</license-p>
+</license>
+</permissions>
+<abstract>
+<p><bold>DOCUMENT TYPE</bold>: Technical Specification</p>
+<p>The Digital Succession Identifier (DSI) is a persistent identifier for bibliographic
+references. This specification of DSI is specific to the initial implementation using
+git.</p>
+</abstract>
+</article-meta>
+</front>
+<body>
+<sec id="introduction">
+  <title>Introduction</title>
+  <p>For a non-technical background and motivation for this technology,
+  refer to <ext-link ext-link-type="uri" xlink:href="https://perm.pub/wk1LzCaCSKkIvLAYObAvaoLNGPc/0">Why try Digital Succession Identifiers</ext-link> and
+  the <ext-link ext-link-type="uri" xlink:href="https://perm.pub/NNtKPk2ox6fksvVD3cmK1fr4ork/0">description of the perm.pub pilot project</ext-link>.</p>
+</sec>
+<sec id="digital-successions">
+  <title>Digital successions</title>
+  <p>A digital succession contains digital objects,
+  which are fixed finite collections of bits.
+  Examples of digital objects include computer files and file system directories (folders).
+  Both <ext-link ext-link-type="uri" xlink:href="https://en.wikipedia.org/wiki/Git">git</ext-link> <xref alt="1" rid="ref-enwikiU003Agit" ref-type="bibr">1</xref> and <ext-link ext-link-type="uri" xlink:href="https://softwareheritage.org">Software
+  Heritage</ext-link> <xref alt="2" rid="ref-cosmo_referencing_2020" ref-type="bibr">2</xref>
+  can represent a file system directory as a digital object.
+  Each digital object in a digital succession represents a new edition of a previous digital object
+  and is assigned a number that determines its order.
+  The digital succession expands, but the digital objects within the succession
+  remain unchanged.</p>
+  <p>In addition, a digital succession is digitally signed.
+  In this specification, the digital signature is made using an SSH signing key via
+  <ext-link ext-link-type="uri" xlink:href="https://en.wikipedia.org/wiki/Git">git</ext-link> <xref alt="1" rid="ref-enwikiU003Agit" ref-type="bibr">1</xref>.
+  When a digital succession is first created, it only consists of a digitally signed
+  genesis record and no digital object editions.
+  A <italic>Digital Succession Identifier</italic> is an intrinsic identifier
+  <xref alt="2" rid="ref-cosmo_referencing_2020" ref-type="bibr">2</xref> <xref alt="3" rid="ref-dicosmoU003Ahal-01865790" ref-type="bibr">3</xref> of the genesis record.</p>
+  <sec id="digital-successions-implemented-via-git">
+    <title>Digital successions implemented via git</title>
+    <p>In the git implementation, the genesis record is a signed initial git commit with an
+    empty tree (and no parent). To expand the digital succession, additional git commits
+    are made using the same signing key. The git tree of each commit is not a
+    digital object in the succession. Instead, it is a record of all the
+    digital object editions in the succession. The top level directory consists of
+    subdirectories named as non-negative integers. Each subdirectory
+    contains either an entry named <monospace>object</monospace> or entries named as non-negative integers that are
+    subdirectories. An entry named <monospace>object</monospace> represents a digital object edition in the digital
+    succession, which can be a file (git blob) or a directory (git tree).
+    For example, when a single file is added as edition 1, the full succession record is a
+    directory with the path <monospace>1/object</monospace> leading to a git blob representing edition 1.</p>
+  </sec>
+</sec>
+<sec id="multilevel-edition-numbering">
+  <title>Multilevel edition numbering</title>
+  <p>In the simplest scenario, edition numbers are positive integers.
+  However, multilevel edition numbering may be used for more advanced usage.
+  Multilevel numbering is commonly used in the numbering of
+  chapters, sections, and subsections (e.g. chapter 2, section 2.4, subsection 2.4.3)
+  as well as software release versions (e.g. software release 2.19.2).</p>
+  <p>An edition number prefix, such as <monospace>1</monospace>, can specify either a digital object edition or
+  the entire sequence of editions <monospace>1.1</monospace>, <monospace>1.2</monospace>, <monospace>1.3</monospace>, etc…
+  An edition number identifies either a digital object edition or a sequence of subordinate
+  edition numbers, but not both. Larger integers indicate newer editions
+  that obsolete older editions with smaller integers. The DSI specification does not
+  assign any semantic meaning to different number levels.</p>
+</sec>
+<sec id="textual-representation-of-a-digital-succession-identifier">
+  <title>Textual representation of a Digital Succession Identifier</title>
+  <p>The textual representation of a Digital Succession Identifier (DSI) is a base
+  identifier followed by an optional slash followed by an optional edition number
+  (possibly multilevel). The edition number is represented as non-negative
+  integers separated by periods.</p>
+  <p>The base DSI is calculated from the git initial commit (genesis record) of a digital
+  succession. Git-compatible software can calculate a 20-byte binary hash that identifies the digital succession.
+  This 20-byte binary hash is usually represented textually as a 40-digit
+  hexadecimal number. However, for a DSI, this 20-byte binary hash has a 27-character
+  representation in standard base64url format (RFC 4648)<xref alt="4" rid="ref-rfc4648" ref-type="bibr">4</xref>.</p>
+  <p>It is worth noting that when a new digital succession (git initial commit) is created,
+  a user can choose not to use it and instead immediately create a new one with a different base64url text representation.
+  There is little cost in not using empty digital successions and recreating new genesis
+  records (git initial commits) until an acceptable base64url identifier is found.</p>
+  <sec id="examples">
+    <title>Examples</title>
+    <def-list>
+      <def-item>
+        <term>Base DSI of this specification:</term>
+        <def>
+          <p><monospace>dsi:1wFGhvmv8XZfPx0O5Hya2e9AyXo</monospace></p>
+        </def>
+      </def-item>
+      <def-item>
+        <term>DSI of the first edition:</term>
+        <def>
+          <p><monospace>dsi:1wFGhvmv8XZfPx0O5Hya2e9AyXo/1</monospace></p>
+        </def>
+      </def-item>
+      <def-item>
+        <term>DSI of the first digital object (subedition) of the first edition:</term>
+        <def>
+          <p><monospace>dsi:1wFGhvmv8XZfPx0O5Hya2e9AyXo/1.1</monospace></p>
+        </def>
+      </def-item>
+    </def-list>
+  </sec>
+  <sec id="future-extensions">
+    <title>Future extensions</title>
+    <p>To support future enhancements,
+    there are three paths to extending this textual representation.
+    These paths involve using a base DSI where:</p>
+    <list list-type="bullet">
+      <list-item>
+        <p>a character is neither a slash (<monospace>/</monospace>) nor one of the 64 base64url characters,</p>
+      </list-item>
+      <list-item>
+        <p>the number of characters is different than 27, or</p>
+      </list-item>
+      <list-item>
+        <p>the 27th character is one of the 48 base64url characters that never appear
+        as the last character of a base64url encoding of 40 bytes
+        (i.e., any base64url character that is not
+        <monospace>A</monospace>, <monospace>E</monospace>, <monospace>I</monospace>, <monospace>M</monospace>, <monospace>Q</monospace>, <monospace>U</monospace>, <monospace>Y</monospace>, <monospace>c</monospace>, <monospace>g</monospace>, <monospace>k</monospace>, <monospace>o</monospace>, <monospace>s</monospace>, <monospace>w</monospace>, <monospace>0</monospace>, <monospace>4</monospace>, or <monospace>8</monospace>).</p>
+      </list-item>
+    </list>
+  </sec>
+</sec>
+<sec id="design-choice-rationales">
+  <title>Design Choice Rationales</title>
+  <sec id="separation-of-git-history-from-edition-history">
+    <title>Separation of git history from edition history</title>
+    <p>A significant design choice is to not directly rely on git commit history
+    to determine the succession of editions.
+    Git commit history accurately records the actions performed with git, but it can be
+    inflexible and confusing for establishing a clean linear history. Software
+    Heritage automatically preserves git commits, which compounds the risk that git commits
+    do not correspond well, or even prevent, an intended clean linear history.
+    There may be situations where having merge commits and non-linear
+    git commit history will be convenient.</p>
+    <p>Having edition history separate from git history also provides a potential path
+    for an enhancement akin to retractions of specific editions.</p>
+  </sec>
+  <sec id="use-of-git-tree-paths-instead-of-git-tags">
+    <title>Use of git tree paths instead of git tags</title>
+    <p>Edition numbers are similar to release versions of software projects.
+    The usual practice in software development is to use git tags to identify releases.
+    In contrast, this specification takes a different approach. Edition numbers are
+    recorded with file paths in git trees rather than git tags.</p>
+    <p>The main reason for this different approach has to do with how digital successions are
+    recorded and copied. A highly desirable feature for digital successions is the ease of
+    copying without errors. It is
+    convenient to copy digital successions from multiple sources and store them in a single
+    git repository. In this specification, a complete digital succession is captured
+    by just a chain of commits (initial commit to latest commit).
+    In contrast, entire software projects, which often include release tags, are usually
+    copied by cloning an entire repository.
+    If edition numbers were recorded as git annotated tags, copying digital successions
+    properly would be more complicated and error-prone (due to missing tags).</p>
+    <p>Git repository branches are a convenient tool for managing digital successions.
+    However, branch names are not part of the digital succession record.</p>
+  </sec>
+  <sec id="use-of-base64url-rather-than-hexadecimal">
+    <title>Use of base64url rather than hexadecimal</title>
+    <p>The textual identifier is in base64url (Base64 with URL and filename safe alphabet) as
+    specified in RFC 4648 <xref alt="4" rid="ref-rfc4648" ref-type="bibr">4</xref>. Both this format and hexadecimal have pros and cons.</p>
+    <p>As mentioned in the introduction to the textual representation, there is no obligation
+    to use the Digital Succession Identifier (DSI) generated by a brand new digital
+    succession. If a DSI is unacceptable to the creator of a new digital succession, a new
+    DSI can be easily generated. Helper tools could perform this function for users by
+    default.</p>
+    <p>The main con to base64url is that it can contain characters that are more prone to copy
+    errors when transmitted via human sight. Certain fonts and handwriting can make poor
+    or no distinction between certain character pairs. For example, some popular sans serif
+    fonts make no visual distinction between capital I and lowercase l.</p>
+    <p>The main pro to base64url is that it is 27 characters rather than 40.
+    Given that DSIs are used in contexts similar to DOIs, it is likely more acceptable to
+    adopters to use 27 characters, which is very typical for a long DOI, rather than 40
+    characters.
+    Displaying an ID of 27 characters rather than 40 characters also fits better on web
+    pages rendered on mobile devices. 27 characters are less likely to be hidden by showing
+    ellipsis, horizontal scroll regions, or shrunk into extremely small fonts.</p>
+    <p>This design decision is partly made on the belief that the copy-via-human-sight issue is
+    increasingly mitigated by a few technology trends:</p>
+    <list list-type="order">
+      <list-item>
+        <label>1)</label>
+        <p>Computer systems are relied upon more and more via more reliable copying mechanisms
+        such as clicking on hyperlinks, copy-and-paste, and QR codes instead of visual copying
+        and handwriting.</p>
+      </list-item>
+      <list-item>
+        <label>2)</label>
+        <p>Websites tend to switch to using appropriate fonts for code like base64url IDs when
+        output into HTML. The same applies to tools that automatically produce PDFs from
+        computer data.</p>
+      </list-item>
+      <list-item>
+        <label>3)</label>
+        <p>Human-to-computer interfaces, such as input fields of Internet-connected software,
+        tend to add features like autocomplete and search disambiguation for typos when
+        sufficient need arises for such a feature.</p>
+      </list-item>
+    </list>
+  </sec>
+  <sec id="use-of-the-term-edition">
+    <title>Use of the term edition</title>
+    <p>The term edition is used to refer to a digital object in a digital succession.
+    Part of the motivation is to avoid confusion with the many uses of the term version.
+    For instance, version can be used to refer to versions of a digital object that
+    are not added as editions.</p>
+    <p>This language is partly due to the initial application of digital successions for
+    scientific articles. Although there are rarely
+    new versions of scientific articles after they are published, it is well established
+    that scientific textbooks are published in multiple <italic>editions</italic>.</p>
+    <p>In the initial application of digital successions, documents are the digital object.
+    A single edition of a document might be presented in different HTML and PDF <italic>versions</italic>,
+    even though they are the same <italic>edition</italic> of a document.</p>
+  </sec>
+</sec>
+<sec id="minutiae">
+  <title>Minutiae</title>
+  <list list-type="bullet">
+    <list-item>
+      <p>A multilevel edition number should not have more than four levels (components).
+      Edition number components (per level) must not be negative and should not exceed four
+      decimal digits.</p>
+    </list-item>
+  </list>
+</sec>
+<sec id="acknowledgments">
+  <title>Acknowledgments</title>
+  <p>Thank you to Valentin Lorentz for questions about design choices
+  and pointing out an important shortcoming in how GPG digital signatures were used in the
+  initial implementation of the hidos library (version 0.3) <xref alt="5" rid="ref-hidosU003A0.3" ref-type="bibr">5</xref>.</p>
+</sec>
+<sec id="further-reading">
+  <title>Further Reading</title>
+  <list list-type="bullet">
+    <list-item>
+      <p>This specification is heavily influenced by the concept of <italic>intrinsic identifier</italic> and
+      related concepts discussed in
+      <xref alt="2" rid="ref-cosmo_referencing_2020" ref-type="bibr">2</xref> <xref alt="3" rid="ref-dicosmoU003Ahal-01865790" ref-type="bibr">3</xref>.</p>
+    </list-item>
+    <list-item>
+      <p>For a discussion on various concepts and proposed terminology about persistent
+      identifiers, see <xref alt="6" rid="ref-kunze_persistence_2017" ref-type="bibr">6</xref>. In the proposed terminology, a DSI is a
+      persistent identifier (PID) that is “frozen” and “waxing” with both intraversioned
+      and extraversioned PIDs depending on the edition number.</p>
+    </list-item>
+  </list>
+</sec>
+<sec id="changes">
+  <title>Changes</title>
+  <sec id="from-edition-1.2">
+    <title>From edition 1.2</title>
+    <list list-type="bullet">
+      <list-item>
+        <p>Reference SSH signing keys instead of GPG/PGP signing keys.</p>
+      </list-item>
+    </list>
+  </sec>
+  <sec id="from-edition-0.2">
+    <title>From edition 0.2</title>
+    <list list-type="bullet">
+      <list-item>
+        <p>Add section about multilevel edition numbering.</p>
+      </list-item>
+      <list-item>
+        <p>Add design rationale behind git tree paths instead of git tags.</p>
+      </list-item>
+      <list-item>
+        <p>Note future expansion paths for text representation.</p>
+      </list-item>
+    </list>
+  </sec>
+</sec>
+</body>
+<back>
+<ref-list>
+  <title>References</title>
+  <ref id="ref-cosmo_referencing_2020">
+    <element-citation publication-type="article-journal">
+      <person-group person-group-type="author">
+        <name><surname>Cosmo</surname><given-names>Roberto Di</given-names></name>
+        <name><surname>Gruenpeter</surname><given-names>Morane</given-names></name>
+        <name><surname>Zacchiroli</surname><given-names>Stefano</given-names></name>
+      </person-group>
+      <article-title>Referencing Source Code Artifacts: A Separate Concern in Software Citation</article-title>
+      <source>Computing in Science &amp; Engineering</source>
+      <year iso-8601-date="2020-03">2020</year><month>03</month>
+      <date-in-citation content-type="access-date"><year iso-8601-date="2022-09-05">2022</year><month>09</month><day>05</day></date-in-citation>
+      <volume>22</volume>
+      <issue>2</issue>
+      <issn>1521-9615, 1558-366X</issn>
+      <uri>https://ieeexplore.ieee.org/document/8946737/</uri>
+      <pub-id pub-id-type="doi">10.1109/MCSE.2019.2963148</pub-id>
+      <fpage>33</fpage>
+      <lpage>43</lpage>
+    </element-citation>
+  </ref>
+  <ref id="ref-dicosmoU003Ahal-01865790">
+    <element-citation publication-type="paper-conference">
+      <person-group person-group-type="author">
+        <name><surname>Di Cosmo</surname><given-names>Roberto</given-names></name>
+        <name><surname>Gruenpeter</surname><given-names>Morane</given-names></name>
+        <name><surname>Zacchiroli</surname><given-names>Stefano</given-names></name>
+      </person-group>
+      <article-title>Identifiers for Digital Objects: the Case of Software Source Code Preservation</article-title>
+      <source>iPRES 2018 - 15th International Conference on Digital Preservation</source>
+      <publisher-loc>Boston, United States</publisher-loc>
+      <year iso-8601-date="2018-09">2018</year><month>09</month>
+      <uri>https://hal.archives-ouvertes.fr/hal-01865790</uri>
+      <fpage>1</fpage>
+      <lpage>9</lpage>
+    </element-citation>
+  </ref>
+  <ref id="ref-kunze_persistence_2017">
+    <element-citation publication-type="article-journal">
+      <person-group person-group-type="author">
+        <name><surname>Kunze</surname><given-names>John</given-names></name>
+        <name><surname>Calvert</surname><given-names>Scout</given-names></name>
+        <name><surname>DeBarry</surname><given-names>Jeremy D.</given-names></name>
+        <name><surname>Hanlon</surname><given-names>Matthew</given-names></name>
+        <name><surname>Janée</surname><given-names>Greg</given-names></name>
+        <name><surname>Sweat</surname><given-names>Sandra</given-names></name>
+      </person-group>
+      <article-title>Persistence Statements: Describing Digital Stickiness</article-title>
+      <source>Data Science Journal</source>
+      <year iso-8601-date="2017-08">2017</year><month>08</month>
+      <date-in-citation content-type="access-date"><year iso-8601-date="2022-11-13">2022</year><month>11</month><day>13</day></date-in-citation>
+      <volume>16</volume>
+      <issn>1683-1470</issn>
+      <uri>http://datascience.codata.org/articles/10.5334/dsj-2017-039/</uri>
+      <pub-id pub-id-type="doi">10.5334/dsj-2017-039</pub-id>
+      <fpage>39</fpage>
+      <lpage></lpage>
+    </element-citation>
+  </ref>
+  <ref id="ref-rfc4648">
+    <element-citation publication-type="report">
+      <person-group person-group-type="author">
+        <name><surname>Josefsson</surname><given-names>S.</given-names></name>
+      </person-group>
+      <article-title>The Base16, Base32, and Base64 data encodings</article-title>
+      <publisher-name>RFC Editor; Internet Requests for Comments; RFC Editor</publisher-name>
+      <year iso-8601-date="2006-10">2006</year><month>10</month>
+      <issn>2070-1721</issn>
+      <uri>https://www.rfc-editor.org/info/rfc4648.txt</uri>
+      <pub-id pub-id-type="doi">10.17487/RFC4648</pub-id>
+    </element-citation>
+  </ref>
+  <ref id="ref-enwikiU003Agit">
+    <element-citation>
+      <person-group person-group-type="author">
+        <string-name>Wikipedia contributors</string-name>
+      </person-group>
+      <article-title>Git — Wikipedia, the free encyclopedia</article-title>
+      <year iso-8601-date="2023">2023</year>
+      <uri>https://en.wikipedia.org/w/index.php?title=Git&amp;oldid=1177307938</uri>
+    </element-citation>
+  </ref>
+  <ref id="ref-hidosU003A0.3">
+    <element-citation>
+      <person-group person-group-type="author">
+        <string-name>Hidos contributors</string-name>
+      </person-group>
+      <article-title>Hidos 0.3</article-title>
+      <year iso-8601-date="2022">2022</year>
+      <uri>https://archive.softwareheritage.org/swh:1:rev:b963e5d2366724df6e8c34d864a7984ce4a2e1be;origin=https://gitlab.com/perm.pub/hidos</uri>
+    </element-citation>
+  </ref>
+</ref-list>
+</back>
+</article>
